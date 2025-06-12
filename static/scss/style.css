@@ -1,0 +1,193 @@
+/* =======================================
+   Modern AHP Decision UI - CSS Variables
+   ======================================= */
+:root {
+  --clr-primary: #4c6ef5;
+  --clr-primary-hover: #3b5bdb;
+  --clr-bg: #f8f9fa;
+  --clr-white: #ffffff;
+  --clr-light-gray: #dee2e6;
+  --clr-dark: #212529;
+  --clr-muted: #6c757d;
+  --radius: 8px;
+  --radius-sm: 4px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition-fast: 0.2s;
+  --font: "Inter", sans-serif;
+  --fs-base: 15px;
+}
+
+/* Reset & Base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  background: var(--clr-bg);
+  color: var(--clr-dark);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Header */
+.header-top {
+  background: var(--clr-white);
+  padding: 16px 24px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--clr-light-gray);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Tabs */
+.tab-bar {
+  display: flex;
+  padding: 0 24px;
+  background: var(--clr-white);
+  border-bottom: 1px solid var(--clr-light-gray);
+}
+
+.tab-button {
+  padding: 10px 20px;
+  margin-right: 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--clr-muted);
+  transition: all var(--transition-fast);
+}
+
+.tab-button.active {
+  color: var(--clr-primary);
+  border-bottom: 2px solid var(--clr-primary);
+}
+
+/* Layout */
+.main {
+  padding: 24px;
+  flex: 1;
+}
+
+.content {
+  background: var(--clr-white);
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+
+/* Form Elements */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+input[type=text],
+input[type=number],
+select {
+  padding: 8px 12px;
+  border: 1px solid var(--clr-light-gray);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 300px;
+}
+
+button {
+  padding: 8px 16px;
+  background: var(--clr-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+button:hover {
+  background: var(--clr-primary-hover);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+th, td {
+  padding: 12px 16px;
+  border: 1px solid var(--clr-light-gray);
+  text-align: center;
+}
+
+thead th {
+  background: var(--clr-primary);
+  color: white;
+}
+
+tbody tr:nth-child(even) {
+  background: #f1f3f5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+/* Tab Content */
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Utility */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+.mt-4 {
+  margin-top: 16px;
+}/*# sourceMappingURL=style.css.map */

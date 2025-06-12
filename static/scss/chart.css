@@ -1,0 +1,27 @@
+#visualization {
+  padding: 30px 20px;
+}
+#visualization .chart-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 30px;
+  text-align: center;
+}
+#visualization .chart-item {
+  flex: 1 1 320px;
+  max-width: 400px;
+  min-width: 300px;
+}
+#visualization .chart-item h4 {
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+#visualization .chart-item canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 350px;
+}/*# sourceMappingURL=chart.css.map */

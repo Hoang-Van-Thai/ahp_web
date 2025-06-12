@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AHP</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='scss/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='scss/chart.css') }}">
+  <script src="{{ url_for('static', filename='js/criteria.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/datasets.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='js/visualization.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+
+</head>
+<body>
+  <div class="header-top">
+    AHP TRONG ĐÁNH GIÁ TIỀM NĂNG ĐẤT ĐAI CHO CÂY MACCA TẠI HUYỆN TUY ĐỨC, TỈNH ĐẮK NÔNG
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-button active" onclick="showTab('criteria')">Đánh giá tiêu chí	</button>
+    <button class="tab-button" onclick="showTab('datasets')">Đánh giá phương án</button>
+    <button class="tab-button" onclick="showTab('results')">Kết quả lựa chọn</button>
+    <button class="tab-button" onclick="showTab('visualization')">Trực quan hoá</button>
+
+  </div>
+
+  <div class="main">
+    <div class="content">
+      <div id="criteria" class="tab-content active" style="overflow-y: auto; height: 100%;">
+        <h3>Xác định tiêu chí</h3>
+        <div style="margin: 10px;">
+          <label for="excelUpload">📥 Nhập ma trận từ Excel:</label>
+         <input type="file" id="excelUpload" accept=".xlsx,.xls" />
+
+        </div>
+        
+
+        <div class="input-row">
+          <label for="numCriteria">Nhập số lượng tiêu chí (tối đa 15):</label>
+
+          <input type="number" id="numCriteria" min="1" max="15" value="8" />
+
+        </div>
+        <p id="criteriaError" style="color: red; display: none; margin-top: 4px;"></p>
+        
+
+        <button onclick="generateMatrix()">Xác nhận</button>
+        <div id="criteriaNamesContainer" style="margin-top: 20px;"></div>
+        <div id="confirmCriteriaNames" style="margin-top: 10px;"></div>
+        <div id="matrixContainer"></div>
+      </div>
+
+      <div id="datasets" class="tab-content">
+       
+        <h3>Xác định phương án</h3>
+
+        <label for="numAlternatives">Số phương án:</label>
+        <input type="number" id="numAlternatives" min="2" max="10" value="4" />
+        <button onclick="generateAlternatives()">Tạo danh sách phương án</button>
+
+        <div id="alternativesNamesContainer" style="margin-top: 20px;"></div>
+        <div id="alternativesMatrixContainer" style="margin-top: 20px;"></div>
+        
+
+
+
+      </div>
+     
+      <div id="results" class="tab-content">
+       
+        <h3>Tóm tắt kết quả AHP</h3>
+       
+      </div>
+      <div id="visualization" class="tab-content">
+        <button onclick="exportChartsToPDF()">📤 Xuất biểu đồ ra PDF</button>
+
+        <div class="chart-row">
+          <div class="chart-item">
+            <h4>1. Biểu đồ tròn – Trọng số tiêu chí</h4>
+            <canvas id="criteriaPieChart" width="400" height="350"></canvas>
+          </div>
+
+          <div class="chart-item">
+            <h4>2. Biểu đồ radar – So sánh phương án</h4>
+            <canvas id="radarChart" width="500" height="400"></canvas>
+          </div>
+
+          <div class="chart-item">
+            <h4>3. Biểu đồ cột – Tổng điểm phương án</h4>
+            <canvas id="finalChart" width="600" height="350"></canvas>
+          </div>
+        </div>
+      </div>
+
+       </div>
+
+    </div>
+
+
+  </div>
+
+</body>
+</html>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const excelInput = document.getElementById("excelUpload");
+
+    if (excelInput) {
+      excelInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+          console.log("📥 Excel đọc được:", rows);
+
+          if (rows.length < 2 || rows[0].length !== rows.length - 1) {
+            alert("❌ File Excel không hợp lệ. Hàng đầu là tên tiêu chí, các hàng sau là ma trận vuông.");
+            return;
+          }
+
+          const names = rows[0].map(n => String(n).trim());
+          const matrix = rows.slice(1);
+          document.getElementById("numCriteria").value = names.length;
+
+          generateMatrix();
+
+          setTimeout(() => {
+            for (let i = 0; i < names.length; i++) {
+              document.getElementById(`crit-name-${i}`).value = names[i];
+            }
+
+            confirmNames(names.length);
+
+            setTimeout(() => {
+              for (let i = 0; i < matrix.length; i++) {
+                for (let j = 0; j < matrix.length; j++) {
+                  if (i === j) continue;
+                  const val = matrix[i][j];
+                  const cell = document.getElementById(`cell-${i}-${j}`);
+                  if (cell) {
+                    const text = typeof val === "number" ? toFraction(val) : String(val).trim();
+                    cell.value = text;
+                    if (i < j) handleInput(i, j, text);
+                  }
+                }
+              }
+            }, 200);
+          }, 200);
+        };
+
+        reader.readAsArrayBuffer(file);
+      });
+    } else {
+      console.warn("❗ Không tìm thấy input Excel với ID 'excelUpload'");
+    }
+  });
+  async function exportChartsToPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+
+  const canvasIds = ['criteriaPieChart', 'radarChart', 'finalChart'];
+  const titles = ['1', '2', '3'];
+
+  for (let i = 0; i < canvasIds.length; i++) {
+    const canvas = document.getElementById(canvasIds[i]);
+    const imgData = canvas.toDataURL('image/png');
+
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    
+    const maxWidth = 180; // mm
+    const scale = maxWidth / canvasWidth;
+    const scaledWidth = canvasWidth * scale;
+    const scaledHeight = canvasHeight * scale;
+
+    pdf.setFontSize(14);
+    pdf.text(titles[i], 10, 10);
+
+    pdf.addImage(imgData, 'PNG', 10, 15, scaledWidth, scaledHeight);
+
+    if (i < canvasIds.length - 1) {
+      pdf.addPage();
+    }
+  }
+
+  pdf.save('AHP_Charts.pdf');
+}
+
+</script>
